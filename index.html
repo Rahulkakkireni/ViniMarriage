@@ -485,8 +485,10 @@
     <div class="particles-overlay"></div>
     <div class="gold-dust" id="dust-field"></div> <div class="overlay"></div>
 
-    <!-- YouTube Player Container -->
-    <div id="player" style="position: absolute; top: -9999px; left: -9999px; opacity: 0; pointer-events: none;"></div>
+    <!-- Audio Player -->
+    <audio id="bg-audio" loop preload="auto" style="display: none;">
+        <source src="Gattivaadavani pattithini cheyyi🫶👀.mp3" type="audio/mpeg">
+    </audio>
 
     <section class="section" style="min-height: auto; padding: var(--section-padding);">
         <div class="hero reveal reveal-stagger">
@@ -507,7 +509,7 @@
         </div>
     </section>
 
-      <!-- upanayanam -->
+      
      <section class="section" style="min-height: auto; padding: var(--section-padding);">   
         <div class="glass-card reveal reveal-stagger" style="background-size: cover; background-position: center; min-height: clamp(400px, 80vh, 600px); display: flex; flex-direction: column; justify-content: space-between; align-items: center; border-radius: clamp(25px, 5vw, 40px); border: 1px solid rgba(212, 175, 55, 0.4); box-shadow: 0 0 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.05); position: relative; overflow: hidden;">
             <!-- Background Video -->
@@ -847,60 +849,28 @@
             }, 1200);
         }
 
-        // BGM: YouTube IFrame API Setup for background music (Hidden)
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        // BGM: Local Audio Setup for background music
+        const bgAudio = document.getElementById('bg-audio');
+        let audioStarted = false;
 
-        var player;
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('player', {
-                height: '0',
-                width: '0',
-                videoId: 'gdRxCOSH3LQ',  
-                playerVars: {
-                    'autoplay': 1,
-                    'loop': 1,
-                    'playlist':'gdRxCOSH3LQ',
-                    'playsinline': 1,
-                    'controls': 0,
-                    'showinfo': 0,
-                    'modestbranding': 1,
-                    'mute': 1
-                },
-                events: {
-                    'onReady': onPlayerReady
-                }
-            });
-        }
-        
-        function onPlayerReady(event) {
-            // Unmute and play as early as possible
-            event.target.playVideo();
-            
-            // Browser policy workaround: unmuted audio requires user interaction
-            const unmuteAudio = () => {
-                event.target.unMute();
-                event.target.setVolume(70); // Set to a clear audible volume
-                event.target.playVideo();
-                
+        const startAudio = () => {
+            if (audioStarted) return;
+            bgAudio.play().then(() => {
+                audioStarted = true;
+                bgAudio.volume = 0.7; // Set to a clear audible volume
                 // Cleanup all interaction listeners
                 ['click', 'touchstart', 'scroll', 'mousemove', 'keydown'].forEach(evt => {
-                    document.removeEventListener(evt, unmuteAudio);
+                    document.removeEventListener(evt, startAudio);
                 });
-            };
-
-            // Register all possible user interactions to trigger unmuting
-            ['click', 'touchstart', 'scroll', 'mousemove', 'keydown'].forEach(evt => {
-                document.addEventListener(evt, unmuteAudio, { once: true });
+            }).catch(error => {
+                console.log("Audio play failed:", error);
             });
-            
-            // Final fallback to try and trigger play/unmute
-            setTimeout(() => {
-                event.target.playVideo();
-            }, 500);
-        }
+        };
+
+        // Register all possible user interactions to trigger audio play
+        ['click', 'touchstart', 'scroll', 'mousemove', 'keydown'].forEach(evt => {
+            document.addEventListener(evt, startAudio, { once: true });
+        });
 
         // UTILITY: Back to Top button visibility control
         const backToTopBtn = document.getElementById('backToTop');
